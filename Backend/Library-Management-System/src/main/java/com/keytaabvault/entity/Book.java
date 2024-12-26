@@ -17,8 +17,8 @@ public class Book {
 	
 	@Column(name="author")
 	String author;
-	@Column(name="discription")
-	String discription;
+	@Column(name="description")
+	String description;
 	@Column(name = "copies")
 	String copies;
 	@Column(name ="copies_available")

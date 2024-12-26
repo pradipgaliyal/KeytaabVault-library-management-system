@@ -1,9 +1,62 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
 import { ReturnBook } from "./ReturnBook";
-
+import { useEffect, useState } from "react";
+import BookModel from "../../Models/BookModel";
+import { SpinnerLoading } from "../../Utils/SpinnerLoding";
 
 export const Carousel = () => {
+  const [books, setBooks] = useState<BookModel[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [httpError, setHttpError] = useState(null);
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      const baseURL = "http://localhost:8080/api/books";
+      const URL = `${baseURL}?page=0&size=9`;
+
+      const response = await fetch(URL);
+
+      if (!response.ok) {
+        throw new Error("Something went wrong!!");
+      }
+
+      const responseJson = await response.json();
+
+      const responseData = responseJson._embedded.books;
+
+      const loadedBook: BookModel[] = [];
+
+      for (const ele in responseData) {
+        loadedBook.push({
+          id: responseData[ele].id,
+          title: responseData[ele].title,
+          author: responseData[ele].author,
+          description: responseData[ele].description,
+          copies: responseData[ele].copies,
+          copiesAvailable: responseData[ele].copiesAvailable,
+          img: responseData[ele].img,
+        });
+      }
+      setBooks(loadedBook);
+      setIsLoading(false);
+    };
+    fetchBooks().catch((error: any) => {
+      setIsLoading(false);
+      setHttpError(error.message);
+    });
+  }, []);
+
+  if (isLoading) {
+    return <SpinnerLoading />;
+  }
+  if (httpError) {
+    return (
+      <div className="container m-5">
+        <p>{httpError}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container mt-5" style={{ height: 550 }}>
       <div className="homepage-carousel-title">
@@ -19,23 +72,27 @@ export const Carousel = () => {
         <div className="carousel-inner">
           <div className="carousel-item active">
             <div className="row d-flex justify-content-center align-items-center">
-              <ReturnBook />
-              <ReturnBook />
-              <ReturnBook />
+              {books.slice(0, 3).map((book) => (
+                <ReturnBook book={book} key={book.id} />
+              ))}
             </div>
           </div>
           <div className="carousel-item">
             <div className="row d-flex justify-content-center align-items-center">
-              <ReturnBook />
-              <ReturnBook />
-              <ReturnBook />
+              {books.slice(3, 6).map((book) => (
+                <ReturnBook book={book} key={book.id} />
+              ))}
             </div>
           </div>
           <div className="carousel-item">
             <div className="row d-flex justify-content-center align-items-center">
+              {books.slice(6, 9).map((book) => (
+                <ReturnBook book={book} key={book.id} />
+              ))}
+              {/* before staticly fetch */}
+              {/* <ReturnBook />
               <ReturnBook />
-              <ReturnBook />
-              <ReturnBook />
+              <ReturnBook /> */}
             </div>
           </div>
         </div>
@@ -68,9 +125,7 @@ export const Carousel = () => {
       {/* Mobile */}
       <div className="d-lg-none mt-3">
         <div className="row d-flex justify-content-center align-items-center">
-          <ReturnBook />
-          <ReturnBook />
-          <ReturnBook />
+          <ReturnBook book={books[7]} key={books[7].id} />
         </div>
       </div>
       <div className="homepage-carousel-title mt-3">
